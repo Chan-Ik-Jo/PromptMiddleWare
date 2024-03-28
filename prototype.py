@@ -69,7 +69,7 @@ class prototype:
             preview_data.append(emb_list[cos_topid_list[i]])
         return preview_data #cosine similarity top 10 data
     
-    
+    #get data from search results
     def get_data(self,preview_data):
         content =[]
         for i in range(len(preview_data)):
@@ -85,10 +85,12 @@ class prototype:
                                                        {'role' : 'assistant', 'content': data}]
                                             )
         return response
+    #imput prompt embedding
     def get_prompt_embedding(self,text):
         emb_response = openai.Embedding.create(model = 'text-embedding-ada-002',input=text)
         return emb_response['data'][0]['embedding']
     
+    #get page content
     def get_page_content(self,preview_data):
         test=[]
         for i in range(len(preview_data)):
@@ -110,7 +112,8 @@ class prototype:
                     print("Error:", response.status)
             except Exception as e:
                 print("Error:", e)
-    
+                
+    #cosine similarity
     def get_cos(self,prom,search):
         prom_emb = np.array(prom)
         search_emb = []
@@ -128,6 +131,7 @@ class prototype:
             topid.append(result.index(sorted_li[i]))
         return topid # type list
     
+    #search result preview embedding
     def get_search_embedding(self,response):
         link_list = response['Link'].values.tolist()
         des_list = response['Description'].values.tolist()
