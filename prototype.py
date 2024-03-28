@@ -90,27 +90,54 @@ class prototype:
         return emb_response['data'][0]['embedding']
     
     def get_page_content(self,preview_data):
-        test=[]
-        for i in range(len(preview_data)):
-            link = preview_data[i]['link']
-            try:
-                http = urllib3.PoolManager(
-                    cert_reqs='CERT_REQUIRED',
-                    ca_certs=certifi.where()
-                )
-                response = http.request('GET', link)
-                if response.status == 200:
-                    html = response.data.decode('utf-8')
-                    soup = bs(html, 'html.parser')
-                    text = soup.get_text()
-                    text = text.replace('\n', '').replace('\r', '')
-                    print(text)
-                    test.append(text)
-                else:
-                    print("Error:", response.status)
-            except Exception as e:
-                print("Error:", e)
-                
+        # test=[]
+        # for i in range(len(preview_data)):
+        #     link = preview_data[i]['link']
+        #     try:
+        #         http = urllib3.PoolManager(
+        #             cert_reqs='CERT_REQUIRED',
+        #             ca_certs=certifi.where()
+        #         )
+        #         response = http.request('GET', link)
+        #         if response.status == 200:
+        #             html = response.data.decode('utf-8')
+        #             soup = bs(html, 'html.parser')
+        #             text = soup.get_text()
+        #             text = text.replace('\n', '').replace('\r', '')
+        #             print(text)
+        #             test.append(text)
+        #         else:
+        #             print("Error:", response.status)
+        #     except Exception as e:
+        #         print("Error:", e)
+            content = []
+            for data in preview_data:
+                link = data['link']
+                try:
+                    http = urllib3.PoolManager(
+                        cert_reqs='CERT_REQUIRED',
+                        ca_certs=certifi.where()
+                    )
+                    response = http.request('GET', link)
+                    if response.status == 200:
+                        html = response.data.decode('utf-8')
+                        soup = bs(html, 'html.parser')
+                        # Remove header and footer elements
+                        header = soup.find('header')
+                        if header:
+                            header.decompose()
+                        footer = soup.find('footer')
+                        if footer:
+                            footer.decompose()
+                        # Extract text from remaining elements
+                        text = soup.get_text()
+                        text = text.replace('\n', '').replace('\r', '')
+                        content.append(text)
+                    else:
+                        print("Error:", response.status)
+                except Exception as e:
+                    print("Error:", e)
+            return content
     
     def get_cos(self,prom,search):
         prom_emb = np.array(prom)
@@ -163,3 +190,5 @@ if __name__ == "__main__":
     print(data)#링크 본문 텍스트
     result = middle.get_LLM(','.join(data),text) # send LLM(gpt-3.5-turbo)
     result = middle.out_put(result['choices'][0]['message']['content']) #final output
+    #%%
+    print(data[0])
