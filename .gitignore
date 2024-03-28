@@ -1,5 +1,4 @@
 secrets.json
-test.py
 *.bin
 *.tsv
 urltest.py
