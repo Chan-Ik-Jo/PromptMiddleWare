@@ -9,15 +9,9 @@ import re
 from bs4 import BeautifulSoup as bs
 from test import Google_API
 import certifi
-
 import urllib3
-import time
 
 #%%
-http = urllib3.PoolManager(
-        cert_reqs='CERT_REQUIRED',
-        ca_certs=certifi.where()
-        )
 '''
 현재 문제
 
@@ -29,6 +23,9 @@ http = urllib3.PoolManager(
 class prototype:
     
     def __init__(self):
+        self.headers = {
+                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
+        }
         self.Trash_Link = ["tistory", "kin", "youtube", "blog", "book", "news", "dcinside", "fmkorea", "ruliweb", "theqoo", "clien", "mlbpark", "instiz", "todayhumor"]
         with open('./secrets.json') as f:
             secrets = json.loads(f.read())
@@ -100,7 +97,7 @@ class prototype:
                     cert_reqs='CERT_REQUIRED',
                     ca_certs=certifi.where()
                 )
-                response = http.request('GET', link)
+                response = http.request('GET', link,headers=self.headers)
                 if response.status == 200:
                     html = response.data.decode('utf-8')
                     soup = bs(html, 'html.parser')
@@ -162,9 +159,15 @@ if __name__ == "__main__":
     text = input("input prompt : ")
     middle = prototype()
     preview_data=middle.text_processing(text) #keyword 추출, 검색결과, 결과 embedding,query embedding,cosine similarity
+    
+    #%%
+    for i in range(len(preview_data)):
+        print(preview_data[i]['txt'])
+    #%%
     data = middle.get_page_content(preview_data) #여러개의 링크에 request 보내는 부분
+    
     print(data)#링크 본문 텍스트
-    result = middle.get_LLM(','.join(data),text) # send LLM(gpt-3.5-turbo)
-    result = middle.out_put(result['choices'][0]['message']['content']) #final output
+    # result = middle.get_LLM(','.join(data),text) # send LLM(gpt-3.5-turbo)
+    # result = middle.out_put(result['choices'][0]['message']['content']) #final output
     #%%
     print(data[0])
