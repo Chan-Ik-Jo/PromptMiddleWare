@@ -5,9 +5,9 @@ import openai
 import numpy as np
 from numpy.linalg import norm
 import pandas as pd
-import re
+import re 
 from bs4 import BeautifulSoup as bs
-from test import Google_API
+from google_api import Google_API
 import certifi
 import urllib3
 
