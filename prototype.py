@@ -23,9 +23,7 @@ import urllib3
 class prototype:
     
     def __init__(self):
-        self.headers = {
-                'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.3'
-        }
+        urllib3.disable_warnings()
         self.Trash_Link = ["tistory", "kin", "youtube", "blog", "book", "news", "dcinside", "fmkorea", "ruliweb", "theqoo", "clien", "mlbpark", "instiz", "todayhumor"]
         with open('./secrets.json') as f:
             secrets = json.loads(f.read())
@@ -89,27 +87,26 @@ class prototype:
     
     #get page content
     def get_page_content(self,preview_data):
-        test=[]
+        header=  {
+            'USER-AGENT': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/58.0.3029.110 Safari/537.36'  
+        }
+        text_list=[]
         for i in range(len(preview_data)):
             link = preview_data[i]['link']
+            response = requests.get(link,headers=header,verify=False)
             try:
-                http = urllib3.PoolManager(
-                    cert_reqs='CERT_REQUIRED',
-                    ca_certs=certifi.where()
-                )
-                response = http.request('GET', link,headers=self.headers)
-                if response.status == 200:
-                    html = response.data.decode('utf-8')
-                    soup = bs(html, 'html.parser')
-                    text = soup.get_text()
-                    text = text.replace('\n', '').replace('\r', '')
-                    print(text)
-                    test.append(text)
+                if response.status_code == 200:
+                    soup=bs(response.text, 'html.parser').get_text()
+                    pattern = r'[^가-힣a-zA-Z0-9]'
+                    soup_text = re.sub(pattern, '', soup)
+                    text_list.append(soup_text)
                 else:
                     print("Error:", response.status)
             except Exception as e:
                 print("Error:", e)
-                
+        json.dump(text_list,open('content.json','w'),ensure_ascii = False)
+        return text_list
+    
     #cosine similarity
     def get_cos(self,prom,search):
         prom_emb = np.array(prom)
@@ -162,12 +159,13 @@ if __name__ == "__main__":
     
     #%%
     for i in range(len(preview_data)):
-        print(preview_data[i]['txt'])
+        print(preview_data[i]['link'])
     #%%
     data = middle.get_page_content(preview_data) #여러개의 링크에 request 보내는 부분
     
     print(data)#링크 본문 텍스트
     # result = middle.get_LLM(','.join(data),text) # send LLM(gpt-3.5-turbo)
-    # result = middle.out_put(result['choices'][0]['message']['content']) #final output
+    #%%
+    print(len(data))
     #%%
     print(data[0])
